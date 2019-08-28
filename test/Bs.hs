@@ -21,7 +21,7 @@ main = checkSequential $$(discover)
 
 prop_xor :: Property
 prop_xor = property $ do
-  let len = Range.singleton 10
+  let len = Range.singleton 256
   xs <- forAll $ genPrimArray len genWord8
   ys <- forAll $ genPrimArray len genWord8
   Simd.xor xs ys === Main.naiveXor xs ys

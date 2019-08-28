@@ -7,6 +7,7 @@
 
 module Simd
   ( xor
+  , lengthP
   ) where
 
 import Control.Monad.ST
@@ -16,11 +17,18 @@ import Data.Word
 import GHC.Exts
 import Simd.Internal
 
+import qualified Data.Bits as Bits
+
 lengthBytes :: forall a. Prim a => PrimArray a -> Int
 lengthBytes p = sizeofPrimArray p * sizeOf @a undefined
 
 unInt :: Int -> Int#
 unInt (I# i#) = i#
+
+lengthP :: ()
+  => PrimArray Word8
+  -> IO Int
+lengthP (PrimArray arr#) = length_bytearray arr#
 
 xor :: forall a. (Prim a)
   => PrimArray a -- ^ source a
@@ -30,9 +38,17 @@ xor a@(PrimArray a#) b@(PrimArray b#) = runST $ if lenA == lenB
   then do
     m@(MutableByteArray target#) <- newByteArray lenA
     avx2_xor_bits target# (unInt lenA) a# b#
-    ByteArray b# <- unsafeFreezeByteArray m
-    pure (PrimArray b#)
+    ByteArray arr# <- unsafeFreezeByteArray m
+    pure (PrimArray arr#)
   else error "xor: length mismatch!"
   where
     lenA = sizeofPrimArray a
     lenB = sizeofPrimArray b
+
+{-
+fallbackXor :: forall a. (Prim a)
+  => PrimArray a
+  -> PrimArray a
+  -> PrimArray a
+fallBackXor = C.zipWith Bits.xor
+-}

@@ -11,6 +11,7 @@ module Simd.Internal
   , avx2_not_bits
   , avx2_or_bits
   , avx2_xor_bits
+  , length_bytearray
   ) where
 
 import Control.Monad.ST
@@ -43,6 +44,11 @@ foreign import ccall unsafe "simd.h avx2_cmpeq8_para"
     -> IO ()
 -}
 
+foreign import ccall "simd_foo.h length_bytearray"
+  length_bytearray :: ()
+    => ByteArray#
+    -> IO Int
+
 foreign import ccall unsafe "simd.h avx2_and_bits"
   avx2_and_bits_internal :: ()
     => MutableByteArray# s -- ^ target
@@ -74,7 +80,7 @@ foreign import ccall unsafe "simd.h avx2_or_bits"
     -> ByteArray# -- ^ source b
     -> IO ()
 
-foreign import ccall unsafe "simd.h avx2_xor_bits"
+foreign import ccall unsafe "simd_foo.h avx2_xor_bits_foo"
   avx2_xor_bits_internal :: ()
     => MutableByteArray# s -- ^ target
     -> Int# -- ^ target length
