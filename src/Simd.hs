@@ -7,7 +7,6 @@
 
 module Simd
   ( xor
-  , lengthP
   ) where
 
 import Control.Monad.ST
@@ -24,11 +23,6 @@ lengthBytes p = sizeofPrimArray p * sizeOf @a undefined
 
 unInt :: Int -> Int#
 unInt (I# i#) = i#
-
-lengthP :: ()
-  => PrimArray Word8
-  -> IO Int
-lengthP (PrimArray arr#) = length_bytearray arr#
 
 xor :: forall a. (Prim a)
   => PrimArray a -- ^ source a

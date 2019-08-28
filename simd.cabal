@@ -50,19 +50,28 @@ library
   c-sources:
     cbits/simd_avx2.c
     cbits/simd_sse2.c
-    cbits/simd_foo.c
-  if flag(sse42)
-    ghc-options: -msse4.2
-    cc-options: -msse4.2
-  if flag(bmi2)
-    cc-options: -mbmi2 -DBMI2_ENABLED
-  if (flag(bmi2)) && (impl(ghc >= 8.4.1))
-    ghc-options: -mbmi2 -msse4.2
-  if flag(avx2)
-    cc-options: -mavx2 -DAVX2_ENABLED
-  if (flag(avx2)) && (impl(ghc >= 8.4.1))
-    ghc-options: -mbmi2 -msse4.2
-    cpp-options: -DBMI2_ENABLED -DAVX2_ENABLED
+  cc-options:
+    -O2
+    -mavx2
+    -msse4.2
+    -mavx512f
+    -mavx512dq
+    -mavx512bw
+    -mavx512vbmi
+    -mavx512vl
+    -ftree-vectorize
+--  if flag(sse42)
+--    ghc-options: -msse4.2
+--    cc-options: -msse4.2
+--  if flag(bmi2)
+--    cc-options: -mbmi2 -DBMI2_ENABLED
+--  if (flag(bmi2)) && (impl(ghc >= 8.4.1))
+--    ghc-options: -mbmi2 -msse4.2
+--  if flag(avx2)
+--    cc-options: -mavx2 -DAVX2_ENABLED
+--  if (flag(avx2)) && (impl(ghc >= 8.4.1))
+--    ghc-options: -mbmi2 -msse4.2
+--    cpp-options: -DBMI2_ENABLED -DAVX2_ENABLED
 
 test-suite bs
   type:
@@ -82,6 +91,8 @@ test-suite bs
     -Wall
     -threaded
     -rtsopts -with-rtsopts=-N
+    -mavx2
+    -msse4.2
 
 flag avx2
   description:
@@ -89,7 +100,7 @@ flag avx2
   manual:
     True
   default:
-    True
+    False
 
 flag bmi2
   description:

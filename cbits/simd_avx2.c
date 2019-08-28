@@ -149,19 +149,15 @@ void avx2_or_bits(
 #endif
 }
 
-void avx2_xor_bits(
-    uint8_t *target,
-    size_t target_length,
-    uint8_t *source_a,
-    uint8_t *source_b) {
-#if defined(AVX2_ENABLED)
-  size_t i;
+void avx2_xor_bits
+  ( uint8_t *target
+  , size_t target_length
+  , uint8_t *source_a
+  , uint8_t *source_b
+  ) {
+    size_t i;
 
-  for (i = 0; i < target_length; i += 32) {
-    __m256i v_data_a   = *(__m256i *)(source_a + i);
-    __m256i v_data_b   = *(__m256i *)(source_b + i);
-    __m256i v_results  = _mm256_xor_si256(v_data_a, v_data_b);
-    *(__m256i *)(target + i) = v_results;
+    for (i = 0; i < target_length; i++) {
+      target[i] = source_a[i] ^ source_b[i];
+    }
   }
-#endif
-}
