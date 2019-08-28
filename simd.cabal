@@ -1,0 +1,114 @@
+cabal-version: 2.2
+name:
+  simd
+version:
+  0.1
+synopsis:
+  GHC Haskell simd library
+-- description:
+homepage:
+  https://github.com/chessai/simd
+-- bug-reports:
+license:
+  BSD-3-Clause
+license-file:
+  LICENSE
+author:
+  chessai
+maintainer:
+  chessai1996@gmail.com
+-- copyright:
+category:
+  SIMD
+build-type:
+  Simple
+extra-source-files:
+  changelog.md
+  readme.md
+  cbits/simd.h
+  cbits/simd_debug.h
+
+library
+  exposed-modules:
+    Simd
+    Simd.Internal
+  build-depends:
+    , base >= 4.10 && < 4.14
+    , contiguous >= 0.4 && < 0.6
+    , primitive >= 0.7 && < 0.8
+    , primitive-foreign >= 0.1 && < 0.2
+    , primitive-unlifted >= 0.1 && < 0.2
+  hs-source-dirs:
+    src
+  default-language:
+    Haskell2010
+  ghc-options:
+    -Wall
+    -O2
+  include-dirs:
+    cbits
+  c-sources:
+    cbits/simd_avx2.c
+    cbits/simd_sse2.c
+  if flag(sse42)
+    ghc-options: -msse4.2
+    cc-options: -msse4.2
+  if flag(bmi2)
+    cc-options: -mbmi2 -DBMI2_ENABLED
+  if (flag(bmi2)) && (impl(ghc >= 8.4.1))
+    ghc-options: -mbmi2 -msse4.2
+  if flag(avx2)
+    cc-options: -mavx2 -DAVX2_ENABLED
+  if (flag(avx2)) && (impl(ghc >= 8.4.1))
+    ghc-options: -mbmi2 -msse4.2
+    cpp-options: -DBMI2_ENABLED -DAVX2_ENABLED
+
+test-suite bs
+  type:
+    exitcode-stdio-1.0
+  hs-source-dirs:
+    test
+  main-is:
+    Bs.hs
+  build-depends:
+    , base
+    , simd
+    , primitive
+    , contiguous
+    , hedgehog
+  ghc-options:
+    -O2
+    -Wall
+    -threaded
+    -rtsopts -with-rtsopts=-N
+
+flag avx2
+  description:
+    Enable AVX-2 instruction set
+  manual:
+    True
+  default:
+    False
+
+flag bmi2
+  description:
+    Enable BMI-2 instruction set
+  manual:
+    True
+  default:
+    False
+
+flag sse42
+  description:
+    Enable SSE 4.2 optimisations
+  manual:
+    True
+  default:
+    True
+
+source-repository head
+  type:
+    git
+  location:
+    https://github.com/chessai/simd
+
