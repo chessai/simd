@@ -59,33 +59,3 @@ xorNaive (ByteArray b0#, ByteArray b1#) =
   in case C.zipWith Bits.xor arr0 arr1 of
     PrimArray b2# -> ByteArray b2#
 {-# noinline xorNaive #-}
-
-{-
-filterV :: Parity -> Vector.Vector Int -> ()
-filterV p v = let !v' = Vector.filter (par p) v in ()
-{-# noinline filterV #-}
-
-filterVU :: Parity -> VectorUnboxed.Vector Int -> ()
-filterVU p v = let !v' = VectorUnboxed.filter (par p) v in ()
-{-# noinline filterVU #-}
-
-filterVS :: Parity -> VectorStorable.Vector Int -> ()
-filterVS p v = let !v' = VectorStorable.filter (par p) v in ()
-{-# noinline filterVS #-}
-
-filterVP :: Parity -> VectorPrimitive.Vector Int -> ()
-filterVP p v = let !v' = VectorPrimitive.filter (par p) v in ()
-{-# noinline filterVP #-}
-
-filterArray :: Parity -> Array Int -> ()
-filterArray p a = let !a' = C.filter (par p) a in ()
-{-# noinline filterArray #-}
-
-filterSmallArray :: Parity -> SmallArray Int -> ()
-filterSmallArray p a = let !a' = C.filter (par p) a in ()
-{-# noinline filterSmallArray #-}
-
-filterPrimArray :: Parity -> PrimArray Int -> ()
-filterPrimArray p a = let !a' = C.filter (par p) a in ()
-{-# noinline filterPrimArray #-}
--}
