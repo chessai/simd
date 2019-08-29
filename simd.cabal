@@ -51,7 +51,7 @@ library
     cbits/simd_avx2.c
     cbits/simd_sse2.c
   cc-options:
-    -O2
+    -O3
     -mavx2
     -msse4.2
     -mavx512f
@@ -91,33 +91,57 @@ test-suite bs
     -Wall
     -threaded
     -rtsopts -with-rtsopts=-N
-    -mavx2
-    -msse4.2
+--    -mavx2
+--    -msse4.2
+--    -mavx512f
+--    -mavx512dq
+--    -mavx512bw
+--    -mavx512vbmi
+--    -mavx512vl
+--    -ftree-vectorize
 
-flag avx2
-  description:
-    Enable AVX-2 instruction set
-  manual:
-    True
-  default:
-    False
+-- ghc: unrecognised flag: -mavx512dq
+-- did you mean one of:
+--   -mavx512cd
+--   -mavx512er
+--   -mavx512f
+-- unrecognised flag: -mavx512bw
+-- did you mean one of:
+--   -mavx512cd
+--   -mavx512er
+--   -mavx512f
+-- unrecognised flag: -mavx512vbmi
+-- unrecognised flag: -mavx512vl
+-- did you mean one of:
+--   -mavx512cd
+--   -mavx512er
+--   -mavx512f
+-- unrecognised flag: -ftree-vectorize
 
-flag bmi2
-  description:
-    Enable BMI-2 instruction set
-  manual:
-    True
-  default:
-    False
+--flag avx2
+--  description:
+--    Enable AVX-2 instruction set
+--  manual:
+--    True
+--  default:
+--    False
 
-flag sse42
-  description:
-    Enable SSE 4.2 optimisations
-  manual:
-    True
-  default:
-    True
-
+--flag bmi2
+--  description:
+--    Enable BMI-2 instruction set
+--  manual:
+--    True
+--  default:
+--    False
+--
+--flag sse42
+--  description:
+--    Enable SSE 4.2 optimisations
+--  manual:
+--    True
+--  default:
+--    True
+--
 source-repository head
   type:
     git
