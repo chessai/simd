@@ -33,6 +33,7 @@ xor :: ()
   -> ByteArray
   -> ByteArray
 xor a b = runST (unsafeFreezeByteArray =<< xorMutable a b)
+{-# inline xor #-}
 
 xorMutable :: ()
   => ByteArray
@@ -47,4 +48,4 @@ xorMutable a b = do
       avx2_xor_bits target# (unInt lenA) (unByteArray a) (unByteArray b)
       pure m
     else error $ "xorMutable: length mismatch! " ++ show lenA ++ " vs " ++ show lenB
-
+{-# inline xorMutable #-}

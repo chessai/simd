@@ -91,6 +91,27 @@ test-suite bs
     -Wall
     -threaded
     -rtsopts -with-rtsopts=-N
+
+benchmark micro
+  type: exitcode-stdio-1.0
+  main-is:
+    Micro.hs
+  build-depends:
+    , base
+    , contiguous
+    , gauge
+    , primitive
+    , random
+    , random-shuffle
+    , simd
+  ghc-options:
+    -O2
+    -Wall
+    -threaded
+    -rtsopts -with-rtsopts=-N
+  hs-source-dirs:
+    bench
+
 --    -mavx2
 --    -msse4.2
 --    -mavx512f
