@@ -4,11 +4,6 @@
 typedef uint8_t v32si __attribute__ ((vector_size (32)));
 typedef uint8_t v16si __attribute__ ((vector_size (16)));
 
-void avx2_memcpy(
-    uint8_t *target,
-    uint8_t *source,
-    size_t len);
-
 void avx2_cmpeq8(
     uint8_t byte,
     uint8_t *target,

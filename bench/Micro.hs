@@ -20,6 +20,8 @@ import qualified Data.Primitive.Contiguous as C
 import qualified Gauge.Main.Options as G
 import qualified Simd
 
+import Prelude hiding (or)
+
 main :: IO ()
 main = do
   !arr0_1000 <- randomByteArray 1000
@@ -35,6 +37,14 @@ main = do
     , bgroup "xor: naive"
         [ bench "1000" $ whnf xorNaive (arr0_1000, arr1_1000)
         , bench "10000" $ whnf xorNaive (arr0_10000, arr1_10000)
+        ]
+    , bgroup "or: simd-accelerated"
+        [ bench "1000" $ whnf or (arr0_1000, arr1_1000)
+        , bench "10000" $ whnf or (arr0_10000, arr1_10000)
+        ]
+    , bgroup "or: naive"
+        [ bench "1000" $ whnf orNaive (arr0_1000, arr1_1000)
+        , bench "10000" $ whnf orNaive (arr0_10000, arr1_10000)
         ]
     ]
 
@@ -59,3 +69,15 @@ xorNaive (ByteArray b0#, ByteArray b1#) =
   in case C.zipWith Bits.xor arr0 arr1 of
     PrimArray b2# -> ByteArray b2#
 {-# noinline xorNaive #-}
+
+or :: (ByteArray,ByteArray) -> ByteArray
+or = uncurry Simd.or
+{-# noinline or #-}
+
+orNaive :: (ByteArray,ByteArray) -> ByteArray
+orNaive (ByteArray b0#, ByteArray b1#) =
+  let arr0 = PrimArray b0# :: PrimArray Word8
+      arr1 = PrimArray b1# :: PrimArray Word8
+  in case C.zipWith (Bits..|.) arr0 arr1 of
+    PrimArray b2# -> ByteArray b2#
+{-# noinline orNaive #-}
