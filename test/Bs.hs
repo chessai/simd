@@ -1,4 +1,4 @@
-{-# language TemplateHaskell #-}
+{-# language MagicHash, TemplateHaskell #-}
 
 module Main (main) where
 
@@ -24,7 +24,12 @@ prop_xor = property $ do
   let len = Range.singleton 256
   xs <- forAll $ genPrimArray len genWord8
   ys <- forAll $ genPrimArray len genWord8
-  Simd.xor xs ys === Main.naiveXor xs ys
+  let lhs = Simd.xor (primArrayToByteArray xs) (primArrayToByteArray ys)
+  let rhs = primArrayToByteArray (Main.naiveXor xs ys)
+  lhs === rhs
+
+primArrayToByteArray :: PrimArray a -> ByteArray
+primArrayToByteArray (PrimArray b#) = ByteArray b#
 
 genPrimArray :: Prim a => Range.Range Int -> Gen a -> Gen (PrimArray a)
 genPrimArray rng gen = Exts.fromList <$> Gen.list rng gen

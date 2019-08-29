@@ -7,6 +7,7 @@
 
 module Simd
   ( xor
+  , xorMutable
   ) where
 
 import Control.Monad.ST
@@ -24,25 +25,26 @@ lengthBytes p = sizeofPrimArray p * sizeOf @a undefined
 unInt :: Int -> Int#
 unInt (I# i#) = i#
 
-xor :: forall a. (Prim a)
-  => PrimArray a -- ^ source a
-  -> PrimArray a -- ^ source b
-  -> PrimArray a -- ^ target
-xor a@(PrimArray a#) b@(PrimArray b#) = runST $ if lenA == lenB
-  then do
-    m@(MutableByteArray target#) <- newByteArray lenA
-    avx2_xor_bits target# (unInt lenA) a# b#
-    ByteArray arr# <- unsafeFreezeByteArray m
-    pure (PrimArray arr#)
-  else error "xor: length mismatch!"
-  where
-    lenA = sizeofPrimArray a
-    lenB = sizeofPrimArray b
+unByteArray :: ByteArray -> ByteArray#
+unByteArray (ByteArray b#) = b#
 
-{-
-fallbackXor :: forall a. (Prim a)
-  => PrimArray a
-  -> PrimArray a
-  -> PrimArray a
-fallBackXor = C.zipWith Bits.xor
--}
+xor :: ()
+  => ByteArray
+  -> ByteArray
+  -> ByteArray
+xor a b = runST (unsafeFreezeByteArray =<< xorMutable a b)
+
+xorMutable :: ()
+  => ByteArray
+  -> ByteArray
+  -> ST s (MutableByteArray s)
+xorMutable a b = do
+  let lenA = sizeofByteArray a
+  let lenB = sizeofByteArray b
+  if lenA == lenB
+    then do
+      m@(MutableByteArray target#) <- newByteArray lenA
+      avx2_xor_bits target# (unInt lenA) (unByteArray a) (unByteArray b)
+      pure m
+    else error $ "xorMutable: length mismatch! " ++ show lenA ++ " vs " ++ show lenB
+

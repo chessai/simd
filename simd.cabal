@@ -54,12 +54,12 @@ library
     -O3
     -mavx2
     -msse4.2
-    -mavx512f
-    -mavx512dq
-    -mavx512bw
-    -mavx512vbmi
-    -mavx512vl
-    -ftree-vectorize
+--    -mavx512f
+--    -mavx512dq
+--    -mavx512bw
+--    -mavx512vbmi
+--    -mavx512vl
+--    -ftree-vectorize
 --  if flag(sse42)
 --    ghc-options: -msse4.2
 --    cc-options: -msse4.2
