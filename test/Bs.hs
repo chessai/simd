@@ -21,7 +21,7 @@ main = checkSequential $$(discover)
 
 prop_xor :: Property
 prop_xor = property $ do
-  let len = Range.singleton 256
+  len <- forAll $ Gen.int (Range.linear 100 1000)
   xs <- forAll $ genPrimArray len genWord8
   ys <- forAll $ genPrimArray len genWord8
   let lhs = Simd.xor (primArrayToByteArray xs) (primArrayToByteArray ys)
@@ -31,8 +31,8 @@ prop_xor = property $ do
 primArrayToByteArray :: PrimArray a -> ByteArray
 primArrayToByteArray (PrimArray b#) = ByteArray b#
 
-genPrimArray :: Prim a => Range.Range Int -> Gen a -> Gen (PrimArray a)
-genPrimArray rng gen = Exts.fromList <$> Gen.list rng gen
+genPrimArray :: Prim a => Int -> Gen a -> Gen (PrimArray a)
+genPrimArray sz gen = Exts.fromList <$> Gen.list (Range.singleton sz) gen
 
 genWord64 :: Gen Word64
 genWord64 = Gen.word64 Range.constantBounded
