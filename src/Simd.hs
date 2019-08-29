@@ -15,10 +15,14 @@ module Simd
   , Simd.andMutable
   , Simd.nand
   , Simd.nandMutable
+
+  , Simd.equal
+  , Simd.equalMutable
   ) where
 
 import Control.Monad.ST
 import Data.Primitive
+import Data.Word
 --import Data.Primitive.Unlifted.Array
 import GHC.Exts
 import Simd.Internal
@@ -83,7 +87,7 @@ nand :: ()
   => ByteArray
   -> ByteArray
   -> ByteArray
-nand = purify andMutable
+nand = purify nandMutable
 {-# inline nand #-}
 
 nandMutable :: ()
@@ -116,4 +120,22 @@ lengthMismatch fun lenA lenB = fun
   ++ show lenA
   ++ " vs "
   ++ show lenB
+
+equal :: ()
+  => Word8
+  -> ByteArray
+  -> ByteArray
+equal = \byte b -> runST (unsafeFreezeByteArray =<< equalMutable byte b)
+{-# inline equal #-}
+
+equalMutable :: ()
+  => Word8
+  -> ByteArray
+  -> ST s (MutableByteArray s)
+equalMutable = \byte b -> do
+  let len = sizeofByteArray b
+  m@(MutableByteArray target#) <- newByteArray len
+  avx2_cmpeq8 byte target# (unInt len) (unByteArray b)
+  pure m
+{-# inline equalMutable #-}
 

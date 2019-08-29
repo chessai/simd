@@ -1,4 +1,4 @@
-{-# language MagicHash, RankNTypes, TemplateHaskell #-}
+{-# language BangPatterns, MagicHash, RankNTypes, ScopedTypeVariables, TemplateHaskell #-}
 
 module Main (main) where
 
@@ -10,6 +10,7 @@ import qualified GHC.Exts as Exts
 import qualified Data.Bits as Bits
 import qualified Data.Primitive.Contiguous as C
 
+import Control.Monad.ST
 import Data.Bits (Bits)
 import Data.Primitive
 import Data.Word
@@ -25,9 +26,7 @@ binary :: ()
   -> Property
 binary simd naive = property $ do
   (xs,ys) <- forAll $ do
-    len <- do
-      x <- Gen.int (Range.linear 100 1000)
-      pure (x + x `mod` 64)
+    len <- Gen.int (Range.linear 100 1000)
     xs <- genPrimArray len genWord8
     ys <- genPrimArray len genWord8
     pure (xs, ys)
@@ -46,6 +45,12 @@ prop_and = binary Simd.and Main.naiveAnd
 
 prop_nand :: Property
 prop_nand = binary Simd.nand Main.naiveNand
+
+prop_equal :: Property
+prop_equal = property $ do
+  byte <- forAll genWord8
+  arr <- forAll $ primArrayToByteArray <$> genPrimArray 1000 genWord8
+  Simd.equal byte arr === Main.naiveEqual byte arr
 
 primArrayToByteArray :: PrimArray a -> ByteArray
 primArrayToByteArray (PrimArray b#) = ByteArray b#
@@ -74,4 +79,18 @@ naiveAnd = C.zipWith (Bits..&.)
 naiveNand :: Bin a
 naiveNand = C.zipWith (\x y -> Bits.complement (x Bits..&. y))
 
-
+naiveEqual :: Word8 -> ByteArray -> ByteArray
+naiveEqual byte arr = runST run where
+  run :: forall s. ST s ByteArray
+  run = do
+    let len = sizeofByteArray arr
+    m :: MutableByteArray s <- newByteArray len
+    let go :: Int -> ST s ()
+        go !ix = if ix < len
+          then do
+            let val = indexByteArray arr ix
+            writeByteArray m ix (if val == byte then 1 else 0 :: Word8)
+            go (ix + 1)
+          else pure ()
+    go 0
+    unsafeFreezeByteArray m

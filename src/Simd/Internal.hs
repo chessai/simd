@@ -4,9 +4,9 @@
 
 module Simd.Internal
   ( -- avx2_memcpy
-    -- avx2_cmpeq8
+    avx2_cmpeq8
     -- avx2_cmpeq8_para
-    avx2_and_bits
+  , avx2_and_bits
   , avx2_nand_bits
   , avx2_not_bits
   , avx2_or_bits
@@ -15,6 +15,7 @@ module Simd.Internal
 
 import Control.Monad.ST
 import Control.Monad.ST.Unsafe (unsafeIOToST)
+import Data.Word
 import GHC.Exts
 
 -- ghc's NCG memcpy compiles to Int#el's specialised memcpy
@@ -23,6 +24,14 @@ import GHC.Exts
 
 --foreign import ccall unsafe "simd.h avx2_mempcy"
 --  avx2_memcpy :: ByteArray# -> ByteArray# -> Int# -> IO ()
+
+foreign import ccall unsafe "simd.h avx2_cmpeq8"
+  avx2_cmpeq8_internal :: ()
+    => Word8 -- ^ query byte
+    -> MutableByteArray# s -- ^ target array
+    -> Int# -- ^ target length
+    -> ByteArray# -- ^ source array
+    -> IO ()
 
 {-
 foreign import ccall unsafe "simd.h avx2_cmpeq8"
@@ -125,4 +134,13 @@ avx2_xor_bits :: ()
   -> ST s ()
 avx2_xor_bits a b c d = unsafeIOToST (avx2_xor_bits_internal a b c d)
 {-# inline avx2_xor_bits #-}
+
+avx2_cmpeq8 :: ()
+    => Word8 -- ^ query byte
+    -> MutableByteArray# s -- ^ target array
+    -> Int# -- ^ target length
+    -> ByteArray# -- ^ source array
+    -> ST s ()
+avx2_cmpeq8 a b c d = unsafeIOToST (avx2_cmpeq8_internal a b c d)
+{-# inline avx2_cmpeq8 #-}
 
