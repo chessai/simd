@@ -9,6 +9,8 @@
 #include <unistd.h>
 #include <ctype.h>
 
+#define ALIGNMENT_BYTES 32
+
 void avx2_cmpeq8(
     uint8_t byte,
     uint8_t *target,
@@ -59,23 +61,38 @@ void avx2_cmpeq8_para(
 #endif
 }
 
-void avx2_and_bits(
-    uint8_t *target,
-    size_t target_length,
-    uint8_t *source_a,
-    uint8_t *source_b) {
-#if defined(AVX2_ENABLED)
-  size_t i;
+void avx2_and_bits
+  ( uint8_t* target
+  , size_t target_length
+  , uint8_t* r1
+  , uint8_t* r2
+  ) {
+    uint8_t* restrict p1 = __builtin_assume_aligned(r1,8);
+    uint8_t* restrict p2 = __builtin_assume_aligned(r2,8);
+    uint8_t* restrict p3 = __builtin_assume_aligned(target,8);
 
-  for (i = 0; i < target_length; i += 32) {
-    __m256i v_data_a   = *(__m256i *)(source_a + i);
-    __m256i v_data_b   = *(__m256i *)(source_b + i);
-    __m256i v_results  = _mm256_and_si256(v_data_a, v_data_b);
-    *(__m256i *)(target + i) = v_results;
+    uint64_t i;
+    for (i = 0; i < target_length; i++) {
+      p3[i] = p1[i] & p2[i];
+    }
   }
-#endif
-}
 
+#define NAND(a,b) ~(a & b)
+
+void avx2_and_not_bits
+  ( uint8_t *target
+  , size_t target_length
+  , uint8_t *source_a
+  , uint8_t *source_b
+  ) {
+    size_t i;
+
+    for (i = 0; i < target_length; i++) {
+      target[i] = NAND(source_a[i], source_b[i]);
+    }
+  }
+
+/*
 void avx2_and_not_bits(
     uint8_t *target,
     size_t target_length,
@@ -92,6 +109,7 @@ void avx2_and_not_bits(
   }
 #endif
 }
+*/
 
 void avx2_not_bits(
     uint8_t *target,
@@ -111,27 +129,33 @@ void avx2_not_bits(
 }
 
 void avx2_or_bits
-  ( uint8_t *target
+  ( uint8_t* target
   , size_t target_length
-  , uint8_t *source_a
-  , uint8_t *source_b
+  , uint8_t* r1
+  , uint8_t* r2
   ) {
-    size_t i;
+    uint8_t* restrict p1 = __builtin_assume_aligned(r1,8);
+    uint8_t* restrict p2 = __builtin_assume_aligned(r2,8);
+    uint8_t* restrict p3 = __builtin_assume_aligned(target,8);
 
+    uint64_t i;
     for (i = 0; i < target_length; i++) {
-      target[i] = source_a[i] | source_b[i];
+      p3[i] = p1[i] | p2[i];
     }
   }
 
 void avx2_xor_bits
-  ( uint8_t *target
+  ( uint8_t* target
   , size_t target_length
-  , uint8_t *source_a
-  , uint8_t *source_b
+  , uint8_t* r1
+  , uint8_t* r2
   ) {
-    size_t i;
+    uint8_t* restrict p1 = __builtin_assume_aligned(r1,8);
+    uint8_t* restrict p2 = __builtin_assume_aligned(r2,8);
+    uint8_t* restrict p3 = __builtin_assume_aligned(target,8);
 
+    uint64_t i;
     for (i = 0; i < target_length; i++) {
-      target[i] = source_a[i] ^ source_b[i];
+      p3[i] = p1[i] ^ p2[i];
     }
   }

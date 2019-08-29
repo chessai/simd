@@ -28,23 +28,29 @@ main = do
   !arr1_1000 <- randomByteArray 1000
   !arr0_10000 <- randomByteArray 10000
   !arr1_10000 <- randomByteArray 10000
+  !arr0_25600 <- randomByteArray 25600
+  !arr1_25600 <- randomByteArray 25600
 
   defaultMainWith gaugeCfg $
     [ bgroup "xor: simd-accelerated"
-        [ bench "1000" $ whnf xor (arr0_1000, arr1_1000)
-        , bench "10000" $ whnf xor (arr0_10000, arr1_10000)
+        [ bench "1,000" $ whnf xor (arr0_1000, arr1_1000)
+        , bench "10,000" $ whnf xor (arr0_10000, arr1_10000)
+        , bench "25,600" $ whnf xor (arr0_25600, arr1_25600)
         ]
     , bgroup "xor: naive"
-        [ bench "1000" $ whnf xorNaive (arr0_1000, arr1_1000)
-        , bench "10000" $ whnf xorNaive (arr0_10000, arr1_10000)
+        [ bench "1,000" $ whnf xorNaive (arr0_1000, arr1_1000)
+        , bench "10,000" $ whnf xorNaive (arr0_10000, arr1_10000)
+        , bench "25,600" $ whnf xorNaive (arr0_25600, arr1_25600)
         ]
     , bgroup "or: simd-accelerated"
-        [ bench "1000" $ whnf or (arr0_1000, arr1_1000)
-        , bench "10000" $ whnf or (arr0_10000, arr1_10000)
+        [ bench "1,000" $ whnf or (arr0_1000, arr1_1000)
+        , bench "10,000" $ whnf or (arr0_10000, arr1_10000)
+        , bench "25,600" $ whnf or (arr0_25600, arr1_25600)
         ]
     , bgroup "or: naive"
-        [ bench "1000" $ whnf orNaive (arr0_1000, arr1_1000)
-        , bench "10000" $ whnf orNaive (arr0_10000, arr1_10000)
+        [ bench "1,000" $ whnf orNaive (arr0_1000, arr1_1000)
+        , bench "10,000" $ whnf orNaive (arr0_10000, arr1_10000)
+        , bench "25,600" $ whnf orNaive (arr0_25600, arr1_25600)
         ]
     ]
 
