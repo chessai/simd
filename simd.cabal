@@ -108,22 +108,6 @@ benchmark micro
   hs-source-dirs:
     bench
 
-executable asm
-  hs-source-dirs:
-    app
-  main-is:
-    Main.hs
-  build-depends:
-    , base
-    , primitive
-    , simd
-  ghc-options:
-    -O2
-    -Wall
-    -ddump-asm
-  default-language:
-    Haskell2010
-
 --    -mavx2
 --    -msse4.2
 --    -mavx512f
