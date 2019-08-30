@@ -63,7 +63,7 @@ xorInto :: ()
   -> Int
   -> ST s ()
 xorInto (MutableByteArray dst) (ByteArray a) (ByteArray b) (I# len) =
-  avx2_or_bits dst len a b
+  avx2_xor_bits dst len a b
 
 or :: ()
   => ByteArray
