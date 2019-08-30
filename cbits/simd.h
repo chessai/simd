@@ -1,3 +1,5 @@
+#include "Rts.h"
+
 #include <unistd.h>
 #include <stdint.h>
 
@@ -41,7 +43,7 @@ void avx2_or_bits(
     uint8_t *source_b);
 
 void avx2_xor_bits(
-    uint8_t *target,
-    size_t target_length,
-    uint8_t *source_a,
-    uint8_t *source_b);
+    uint8_t* restrict target,
+    HsInt target_length,
+    uint8_t* restrict source_a,
+    uint8_t* restrict source_b);
