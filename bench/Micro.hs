@@ -1,13 +1,14 @@
 {-# language
         BangPatterns
       , MagicHash
-      , TypeApplications
+      , RankNTypes
+      , ScopedTypeVariables
   #-}
 
 module Main (main) where
 
 import Control.Monad (replicateM)
-import Control.Monad.ST (runST,stToIO)
+import Control.Monad.ST (ST, runST,stToIO)
 import Data.Primitive.ByteArray
 import Data.Primitive.Contiguous
 import Data.Primitive.PrimArray
@@ -43,6 +44,8 @@ main = do
   !aligned_buf_10000 <- newAlignedPinnedByteArray 10000 32
   !aligned_buf_25600 <- newAlignedPinnedByteArray 25600 32
 
+  let !test_byte = 20
+
   defaultMainWith gaugeCfg $
     [ bgroup "xor: simd-accelerated"
         [ bench "1,000" $ whnf xor (arr0_1000, arr1_1000)
@@ -71,6 +74,16 @@ main = do
         [ bench "1,000" $ whnf orNaive (arr0_1000, arr1_1000)
         , bench "10,000" $ whnf orNaive (arr0_10000, arr1_10000)
         , bench "25,600" $ whnf orNaive (arr0_25600, arr1_25600)
+        ]
+    , bgroup "equal: simd-accelerated"
+        [ bench "1,000" $ whnf (equal test_byte) arr0_1000
+        , bench "10,000" $ whnf (equal test_byte) arr0_10000
+        , bench "25,600" $ whnf (equal test_byte) arr0_25600
+        ]
+    , bgroup "equal: naive"
+        [ bench "1,000" $ whnf (equalNaive test_byte) arr0_1000
+        , bench "10,000" $ whnf (equalNaive test_byte) arr0_10000
+        , bench "25,600" $ whnf (equalNaive test_byte) arr0_25600
         ]
     ]
 
@@ -113,3 +126,25 @@ orNaive (ByteArray b0#, ByteArray b1#) =
   in case C.zipWith (Bits..|.) arr0 arr1 of
     PrimArray b2# -> ByteArray b2#
 {-# noinline orNaive #-}
+
+equal :: Word8 -> ByteArray -> ByteArray
+equal = Simd.equal
+{-# noinline equal #-}
+
+equalNaive :: Word8 -> ByteArray -> ByteArray
+equalNaive byte arr = runST run where
+  run :: forall s. ST s ByteArray
+  run = do
+    let len = sizeofByteArray arr
+    m :: MutableByteArray s <- newByteArray len
+    let go :: Int -> ST s ()
+        go !ix = if ix < len
+          then do
+            let val = indexByteArray arr ix
+            writeByteArray m ix (if val == byte then 1 else 0 :: Word8)
+            go (ix + 1)
+          else pure ()
+    go 0
+    unsafeFreezeByteArray m
+{-# noinline equalNaive #-}
+

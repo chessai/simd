@@ -54,32 +54,15 @@ library
     -O3
     -mavx2
     -msse4.2
---    -mavx512f
---    -mavx512dq
---    -mavx512bw
---    -mavx512vbmi
---    -mavx512vl
---    -ftree-vectorize
---  if flag(sse42)
---    ghc-options: -msse4.2
---    cc-options: -msse4.2
---  if flag(bmi2)
---    cc-options: -mbmi2 -DBMI2_ENABLED
---  if (flag(bmi2)) && (impl(ghc >= 8.4.1))
---    ghc-options: -mbmi2 -msse4.2
---  if flag(avx2)
---    cc-options: -mavx2 -DAVX2_ENABLED
---  if (flag(avx2)) && (impl(ghc >= 8.4.1))
---    ghc-options: -mbmi2 -msse4.2
---    cpp-options: -DBMI2_ENABLED -DAVX2_ENABLED
+    -ftree-vectorize
 
-test-suite bs
+test-suite spec
   type:
     exitcode-stdio-1.0
   hs-source-dirs:
     test
   main-is:
-    Bs.hs
+    Spec.hs
   build-depends:
     , base
     , simd
@@ -108,57 +91,6 @@ benchmark micro
   hs-source-dirs:
     bench
 
---    -mavx2
---    -msse4.2
---    -mavx512f
---    -mavx512dq
---    -mavx512bw
---    -mavx512vbmi
---    -mavx512vl
---    -ftree-vectorize
-
--- ghc: unrecognised flag: -mavx512dq
--- did you mean one of:
---   -mavx512cd
---   -mavx512er
---   -mavx512f
--- unrecognised flag: -mavx512bw
--- did you mean one of:
---   -mavx512cd
---   -mavx512er
---   -mavx512f
--- unrecognised flag: -mavx512vbmi
--- unrecognised flag: -mavx512vl
--- did you mean one of:
---   -mavx512cd
---   -mavx512er
---   -mavx512f
--- unrecognised flag: -ftree-vectorize
-
---flag avx2
---  description:
---    Enable AVX-2 instruction set
---  manual:
---    True
---  default:
---    False
-
---flag bmi2
---  description:
---    Enable BMI-2 instruction set
---  manual:
---    True
---  default:
---    False
---
---flag sse42
---  description:
---    Enable SSE 4.2 optimisations
---  manual:
---    True
---  default:
---    True
---
 source-repository head
   type:
     git

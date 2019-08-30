@@ -33,25 +33,6 @@ foreign import ccall unsafe "simd.h avx2_cmpeq8"
     -> ByteArray# -- ^ source array
     -> IO ()
 
-{-
-foreign import ccall unsafe "simd.h avx2_cmpeq8"
-  avx2_cmpeq8 :: ()
-    => Word8 -- ^ byte
-    -> ByteArray# -- ^ target array
-    -> Int# -- ^ target length
-    -> ByteArray# -- ^ source array
-    -> IO ()
-
-foreign import ccall unsafe "simd.h avx2_cmpeq8_para"
-  avx2_cmpeq8_para :: ()
-    => ByteArray#
-    -> Int#
-    -> Ptr (Ptr Word8)
-    -> Int#
-    -> Ptr Word8
-    -> IO ()
--}
-
 foreign import ccall unsafe "simd.h avx2_and_bits"
   avx2_and_bits_internal :: ()
     => MutableByteArray# s -- ^ target
