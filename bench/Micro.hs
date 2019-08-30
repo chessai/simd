@@ -12,6 +12,7 @@ import Control.Monad.ST (ST, runST,stToIO)
 import Data.Primitive.ByteArray
 import Data.Primitive.Contiguous
 import Data.Primitive.PrimArray
+import Data.Primitive.Types
 import Data.Word
 import Gauge.Main
 import System.Random
@@ -44,7 +45,8 @@ main = do
   !aligned_buf_10000 <- newAlignedPinnedByteArray 10000 32
   !aligned_buf_25600 <- newAlignedPinnedByteArray 25600 32
 
-  let !test_byte = 20
+  let test_byte_8 :: Word8; !test_byte_8 = 20;
+      test_byte_16 :: Word16; !test_byte_16 = 20;
 
   defaultMainWith gaugeCfg $
     [ bgroup "xor: simd-accelerated"
@@ -75,16 +77,27 @@ main = do
         , bench "10,000" $ whnf orNaive (arr0_10000, arr1_10000)
         , bench "25,600" $ whnf orNaive (arr0_25600, arr1_25600)
         ]
-    , bgroup "equal: simd-accelerated"
-        [ bench "1,000" $ whnf (equal test_byte) arr0_1000
-        , bench "10,000" $ whnf (equal test_byte) arr0_10000
-        , bench "25,600" $ whnf (equal test_byte) arr0_25600
+    , bgroup "equal: word8, simd-accelerated"
+        [ bench "1,000" $ whnf (equal test_byte_8) arr0_1000
+        , bench "10,000" $ whnf (equal test_byte_8) arr0_10000
+        , bench "25,600" $ whnf (equal test_byte_8) arr0_25600
         ]
-    , bgroup "equal: naive"
-        [ bench "1,000" $ whnf (equalNaive test_byte) arr0_1000
-        , bench "10,000" $ whnf (equalNaive test_byte) arr0_10000
-        , bench "25,600" $ whnf (equalNaive test_byte) arr0_25600
+    , bgroup "equal: word8, naive"
+        [ bench "1,000" $ whnf (equalNaive test_byte_8) arr0_1000
+        , bench "10,000" $ whnf (equalNaive test_byte_8) arr0_10000
+        , bench "25,600" $ whnf (equalNaive test_byte_8) arr0_25600
         ]
+    , bgroup "equal: word16, simd-accelerated"
+        [ bench "1,000" $ whnf (equal test_byte_16) arr0_1000
+        , bench "10,000" $ whnf (equal test_byte_16) arr0_10000
+        , bench "25,600" $ whnf (equal test_byte_16) arr0_25600
+        ]
+    , bgroup "equal: word16, naive"
+        [ bench "1,000" $ whnf (equalNaive test_byte_16) arr0_1000
+        , bench "10,000" $ whnf (equalNaive test_byte_16) arr0_10000
+        , bench "25,600" $ whnf (equalNaive test_byte_16) arr0_25600
+        ]
+
     ]
 
 align32 :: ByteArray -> ByteArray
@@ -127,11 +140,11 @@ orNaive (ByteArray b0#, ByteArray b1#) =
     PrimArray b2# -> ByteArray b2#
 {-# noinline orNaive #-}
 
-equal :: Word8 -> ByteArray -> ByteArray
+equal :: Simd.SimdEqual a => a -> ByteArray -> ByteArray
 equal = Simd.equal
 {-# noinline equal #-}
 
-equalNaive :: Word8 -> ByteArray -> ByteArray
+equalNaive :: (Prim a, Eq a) => a -> ByteArray -> ByteArray
 equalNaive byte arr = runST run where
   run :: forall s. ST s ByteArray
   run = do

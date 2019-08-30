@@ -46,10 +46,16 @@ prop_and = binary Simd.and Main.naiveAnd
 prop_nand :: Property
 prop_nand = binary Simd.nand Main.naiveNand
 
-prop_equal :: Property
-prop_equal = property $ do
+prop_equal8 :: Property
+prop_equal8 = property $ do
   byte <- forAll genWord8
   arr <- forAll $ primArrayToByteArray <$> genPrimArray 1000 genWord8
+  Simd.equal byte arr === Main.naiveEqual byte arr
+
+prop_equal16 :: Property
+prop_equal16 = property $ do
+  byte <- forAll genWord16
+  arr <- forAll $ primArrayToByteArray <$> genPrimArray 1000 genWord16
   Simd.equal byte arr === Main.naiveEqual byte arr
 
 primArrayToByteArray :: PrimArray a -> ByteArray
@@ -60,6 +66,9 @@ genPrimArray sz gen = Exts.fromList <$> Gen.list (Range.singleton sz) gen
 
 genWord64 :: Gen Word64
 genWord64 = Gen.word64 Range.constantBounded
+
+genWord16 :: Gen Word16
+genWord16 = Gen.word16 Range.constantBounded
 
 genWord8 :: Gen Word8
 genWord8 = Gen.word8 Range.constantBounded
@@ -79,7 +88,7 @@ naiveAnd = C.zipWith (Bits..&.)
 naiveNand :: Bin a
 naiveNand = C.zipWith (\x y -> Bits.complement (x Bits..&. y))
 
-naiveEqual :: Word8 -> ByteArray -> ByteArray
+naiveEqual :: (Prim a, Eq a) => a -> ByteArray -> ByteArray
 naiveEqual byte arr = runST run where
   run :: forall s. ST s ByteArray
   run = do

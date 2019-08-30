@@ -17,8 +17,8 @@ module Simd
   , Simd.nand
   , Simd.nandMutable
 
+  , Simd.SimdEqual(..)
   , Simd.equal
-  , Simd.equalMutable
   ) where
 
 import Control.Monad.ST
@@ -131,21 +131,27 @@ lengthMismatch fun lenA lenB = fun
   ++ " vs "
   ++ show lenB
 
-equal :: ()
-  => Word8
-  -> ByteArray
-  -> ByteArray
-equal = \byte b -> runST (unsafeFreezeByteArray =<< equalMutable byte b)
+class SimdEqual a where
+  equalMutable :: ()
+    => a -- ^ the byte(s) to compare for equality
+    -> ByteArray -- ^ the source byte array against which you compare the bytes
+    -> MutableByteArray s -- ^ The target bytearray which gets populated which bytes that are either 0 or 1 (not equal/equal)
+    -> ST s ()
+
+equal :: SimdEqual a => a -> ByteArray -> ByteArray
+equal bytes = \source -> runST $ do
+  m <- newByteArray (sizeofByteArray source)
+  equalMutable bytes source m
+  unsafeFreezeByteArray m
 {-# inline equal #-}
 
-equalMutable :: ()
-  => Word8
-  -> ByteArray
-  -> ST s (MutableByteArray s)
-equalMutable = \byte b -> do
-  let len = sizeofByteArray b
-  m@(MutableByteArray target#) <- newByteArray len
-  avx2_cmpeq8 byte target# (unInt len) (unByteArray b)
-  pure m
-{-# inline equalMutable #-}
+instance SimdEqual Word8 where
+  equalMutable byte = \(ByteArray source#) (MutableByteArray target#) -> do
+    avx2_cmpeq8 byte target# (sizeofByteArray# source#) source#
+  {-# inline equalMutable #-}
+
+instance SimdEqual Word16 where
+  equalMutable byte = \(ByteArray source#) (MutableByteArray target#) -> do
+    avx2_cmpeq16 byte target# (sizeofByteArray# source#) source#
+  {-# inline equalMutable #-}
 

@@ -5,6 +5,7 @@
 module Simd.Internal
   ( -- avx2_memcpy
     avx2_cmpeq8
+  , avx2_cmpeq16
     -- avx2_cmpeq8_para
   , avx2_and_bits
   , avx2_nand_bits
@@ -28,6 +29,14 @@ import GHC.Exts
 foreign import ccall unsafe "simd.h avx2_cmpeq8"
   avx2_cmpeq8_internal :: ()
     => Word8 -- ^ query byte
+    -> MutableByteArray# s -- ^ target array
+    -> Int# -- ^ target length
+    -> ByteArray# -- ^ source array
+    -> IO ()
+
+foreign import ccall unsafe "simd.h avx2_cmpeq16"
+  avx2_cmpeq16_internal :: ()
+    => Word16 -- ^ query byte
     -> MutableByteArray# s -- ^ target array
     -> Int# -- ^ target length
     -> ByteArray# -- ^ source array
@@ -124,4 +133,13 @@ avx2_cmpeq8 :: ()
     -> ST s ()
 avx2_cmpeq8 a b c d = unsafeIOToST (avx2_cmpeq8_internal a b c d)
 {-# inline avx2_cmpeq8 #-}
+
+avx2_cmpeq16 :: ()
+    => Word16 -- ^ query byte
+    -> MutableByteArray# s -- ^ target array
+    -> Int# -- ^ target length
+    -> ByteArray# -- ^ source array
+    -> ST s ()
+avx2_cmpeq16 a b c d = unsafeIOToST (avx2_cmpeq16_internal a b c d)
+{-# inline avx2_cmpeq16 #-}
 

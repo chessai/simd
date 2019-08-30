@@ -19,13 +19,29 @@ void avx2_cmpeq8
   , HsInt target_length
   , uint8_t *source
   ) {
-    uint8_t* restrict r_source = __builtin_assume_aligned(source,8);
-    uint8_t* restrict r_target = __builtin_assume_aligned(target,8);
+    //uint8_t* restrict r_source = __builtin_assume_aligned(source,8);
+    //uint8_t* restrict r_target = __builtin_assume_aligned(target,8);
 
     uint64_t i;
 
-    for (int i = 0; i < target_length; i++) {
-      r_target[i] = r_source[i] == byte;
+    for (i = 0; i < target_length; i++) {
+      target[i] = source[i] == byte;
+    }
+  }
+
+void avx2_cmpeq16
+  ( uint16_t byte
+  , uint8_t *target
+  , HsInt target_length
+  , uint16_t *source
+  ) {
+    //uint8_t* restrict r_source = __builtin_assume_aligned(source,8);
+    //uint8_t* restrict r_target = __builtin_assume_aligned(target,8);
+
+    uint64_t i;
+
+    for (i = 0; i < target_length; i++) {
+      target[i] = source[i] == byte;
     }
   }
 
