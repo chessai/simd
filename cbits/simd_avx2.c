@@ -1,4 +1,5 @@
 #include "simd.h"
+#include "Rts.h"
 
 #include <immintrin.h>
 #include <mmintrin.h>
@@ -10,6 +11,7 @@
 #include <ctype.h>
 
 #define ALIGNMENT_BYTES 32
+#define is_aligned(POINTER) (((uintptr_t)(const void *)(POINTER)) % 32 == 0)
 
 void avx2_cmpeq8
   ( uint8_t byte
@@ -160,17 +162,22 @@ void avx2_or_bits
   }
 
 void avx2_xor_bits
-  ( uint8_t* target
-  , size_t target_length
-  , uint8_t* r1
-  , uint8_t* r2
+  ( uint8_t* restrict target
+  , HsInt target_length
+  , uint8_t* restrict r1
+  , uint8_t* restrict r2
   ) {
-    uint8_t* restrict p1 = __builtin_assume_aligned(r1,8);
-    uint8_t* restrict p2 = __builtin_assume_aligned(r2,8);
-    uint8_t* restrict p3 = __builtin_assume_aligned(target,8);
+    if(is_aligned(r1) && is_aligned(r1) && is_aligned(target)) {
+      uint8_t* restrict p1 = __builtin_assume_aligned(r1,32);
+      uint8_t* restrict p2 = __builtin_assume_aligned(r2,32);
+      uint8_t* restrict p3 = __builtin_assume_aligned(target,32);
 
-    uint64_t i;
-    for (i = 0; i < target_length; i++) {
-      p3[i] = p1[i] ^ p2[i];
+      for (HsInt i = 0; i < target_length; i++) {
+        p3[i] = p1[i] ^ p2[i];
+      }
+    } else {
+      for (HsInt i = 0; i < target_length; i++) {
+        target[i] = r1[i] ^ r2[i];
+      }
     }
   }

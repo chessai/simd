@@ -7,6 +7,7 @@
 module Main (main) where
 
 import Control.Monad (replicateM)
+import Control.Monad.ST (runST,stToIO)
 import Data.Primitive.ByteArray
 import Data.Primitive.Contiguous
 import Data.Primitive.PrimArray
@@ -31,11 +32,30 @@ main = do
   !arr0_25600 <- randomByteArray 25600
   !arr1_25600 <- randomByteArray 25600
 
+  let !arr0_1000_aligned = align32 arr0_1000
+      !arr1_1000_aligned = align32 arr1_1000
+      !arr0_10000_aligned = align32 arr0_10000
+      !arr1_10000_aligned = align32 arr1_10000
+      !arr0_25600_aligned = align32 arr0_25600
+      !arr1_25600_aligned = align32 arr1_25600
+
+  !aligned_buf_1000 <- newAlignedPinnedByteArray 1000 32
+  !aligned_buf_10000 <- newAlignedPinnedByteArray 10000 32
+  !aligned_buf_25600 <- newAlignedPinnedByteArray 25600 32
+
   defaultMainWith gaugeCfg $
     [ bgroup "xor: simd-accelerated"
         [ bench "1,000" $ whnf xor (arr0_1000, arr1_1000)
         , bench "10,000" $ whnf xor (arr0_10000, arr1_10000)
         , bench "25,600" $ whnf xor (arr0_25600, arr1_25600)
+        ]
+    , bgroup "xor: simd-accelerated-aligned"
+        [ bench "1,000" $ whnfIO
+            (stToIO $ Simd.xorInto aligned_buf_1000 arr0_1000_aligned arr1_1000_aligned 1000)
+        , bench "10,000" $ whnfIO
+            (stToIO $ Simd.xorInto aligned_buf_10000 arr0_10000_aligned arr1_10000_aligned 10000)
+        , bench "25,600" $ whnfIO
+            (stToIO $ Simd.xorInto aligned_buf_25600 arr0_25600_aligned arr1_25600_aligned 25600)
         ]
     , bgroup "xor: naive"
         [ bench "1,000" $ whnf xorNaive (arr0_1000, arr1_1000)
@@ -53,6 +73,12 @@ main = do
         , bench "25,600" $ whnf orNaive (arr0_25600, arr1_25600)
         ]
     ]
+
+align32 :: ByteArray -> ByteArray
+align32 src = runST $ do
+  dst <- newAlignedPinnedByteArray (sizeofByteArray src) 32
+  copyByteArray dst 0 src 0 (sizeofByteArray src)
+  unsafeFreezeByteArray dst
 
 gaugeCfg :: G.Config
 gaugeCfg = G.defaultConfig

@@ -9,6 +9,7 @@
 module Simd
   ( Simd.xor
   , Simd.xorMutable
+  , Simd.xorInto
   , Simd.or
   , Simd.orMutable
   , Simd.and
@@ -54,6 +55,15 @@ xorMutable :: ()
   -> ST s (MutableByteArray s)
 xorMutable = binop "xorMutable" avx2_xor_bits
 {-# inline xorMutable #-}
+
+xorInto :: ()
+  => MutableByteArray s
+  -> ByteArray
+  -> ByteArray
+  -> Int
+  -> ST s ()
+xorInto (MutableByteArray dst) (ByteArray a) (ByteArray b) (I# len) =
+  avx2_or_bits dst len a b
 
 or :: ()
   => ByteArray
